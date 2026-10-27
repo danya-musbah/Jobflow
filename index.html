@@ -1,0 +1,377 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JobFlow — Your job search, organized.</title>
+    <meta
+      name="description"
+      content="JobFlow helps you track job applications, interviews, contacts, and reminders in one organized place."
+    />
+
+    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="stylesheet" href="css/responsive.css" />
+
+    <!-- Supabase JS client (browser build, no npm install required) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  </head>
+  <body>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <div id="app-root">
+      <!-- ============================================================
+       AUTH SCREEN (shown when no session)
+       ============================================================ -->
+      <section id="auth-screen" class="auth-wrap" hidden>
+        <div class="auth-hero">
+          <div class="auth-hero-brand">JOBFLOW</div>
+          <div>
+            <h1 class="auth-hero-headline">Your job search, organized.</h1>
+            <p class="auth-hero-sub">
+              Track every application, interview, and follow-up in one calm,
+              editorial workspace — backed by your own private Supabase project.
+            </p>
+          </div>
+          <p
+            class="text-mono"
+            style="
+              color: rgba(239, 236, 201, 0.5);
+              font-size: 12px;
+              position: relative;
+              z-index: 1;
+            "
+          >
+            Cloud-backed · Row-level secured · No spreadsheets required
+          </p>
+        </div>
+
+        <div class="auth-form-side">
+          <div class="auth-card">
+            <!-- Sign in -->
+            <form id="signin-form" class="auth-form" data-form="signin">
+              <h1>Welcome back</h1>
+              <p class="auth-sub">
+                Sign in to pick up your job search where you left off.
+              </p>
+              <div class="auth-error" id="signin-error" role="alert"></div>
+              <div class="field">
+                <label for="signin-email">Email</label>
+                <input
+                  type="email"
+                  id="signin-email"
+                  name="email"
+                  autocomplete="email"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="signin-password">Password</label>
+                <input
+                  type="password"
+                  id="signin-password"
+                  name="password"
+                  autocomplete="current-password"
+                  required
+                />
+                <span class="error-text"></span>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">
+                Sign in
+              </button>
+              <p class="auth-switch">
+                <a href="#" data-switch="forgot-password"
+                  >Forgot your password?</a
+                >
+              </p>
+              <p class="auth-switch">
+                Don't have an account?
+                <a href="#" data-switch="signup">Create one</a>
+              </p>
+            </form>
+
+            <!-- Sign up -->
+            <form id="signup-form" class="auth-form" data-form="signup" hidden>
+              <h1>Create your account</h1>
+              <p class="auth-sub">
+                Free to use — your data lives in your own Supabase project.
+              </p>
+              <div class="auth-error" id="signup-error" role="alert"></div>
+              <div class="field">
+                <label for="signup-name">Full name</label>
+                <input
+                  type="text"
+                  id="signup-name"
+                  name="fullName"
+                  autocomplete="name"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="signup-email">Email</label>
+                <input
+                  type="email"
+                  id="signup-email"
+                  name="email"
+                  autocomplete="email"
+                  required
+                />
+              </div>
+              <div class="field">
+                <label for="signup-password">Password</label>
+                <input
+                  type="password"
+                  id="signup-password"
+                  name="password"
+                  autocomplete="new-password"
+                  required
+                />
+                <span class="hint">At least 8 characters.</span>
+                <span class="error-text"></span>
+              </div>
+              <div class="field">
+                <label for="signup-confirm">Confirm password</label>
+                <input
+                  type="password"
+                  id="signup-confirm"
+                  name="confirmPassword"
+                  autocomplete="new-password"
+                  required
+                />
+                <span class="error-text"></span>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">
+                Create account
+              </button>
+              <p class="auth-switch">
+                Already have an account?
+                <a href="#" data-switch="signin">Sign in</a>
+              </p>
+            </form>
+
+            <!-- Forgot password -->
+            <form
+              id="forgot-form"
+              class="auth-form"
+              data-form="forgot-password"
+              hidden
+            >
+              <h1>Reset your password</h1>
+              <p class="auth-sub">
+                Enter your email and we'll send a password reset link.
+              </p>
+              <div class="auth-error" id="forgot-error" role="alert"></div>
+              <div class="auth-success" id="forgot-success" role="status"></div>
+              <div class="field">
+                <label for="forgot-email">Email</label>
+                <input
+                  type="email"
+                  id="forgot-email"
+                  name="email"
+                  autocomplete="email"
+                  required
+                />
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">
+                Send reset link
+              </button>
+              <p class="auth-switch">
+                <a href="#" data-switch="signin">Back to sign in</a>
+              </p>
+            </form>
+
+            <!-- Set new password (after clicking email link) -->
+            <form
+              id="reset-form"
+              class="auth-form"
+              data-form="reset-password"
+              hidden
+            >
+              <h1>Set a new password</h1>
+              <p class="auth-sub">Choose a new password for your account.</p>
+              <div class="auth-error" id="reset-error" role="alert"></div>
+              <div class="field">
+                <label for="reset-password">New password</label>
+                <input
+                  type="password"
+                  id="reset-password"
+                  name="password"
+                  autocomplete="new-password"
+                  required
+                />
+                <span class="hint">At least 8 characters.</span>
+                <span class="error-text"></span>
+              </div>
+              <button type="submit" class="btn btn-primary btn-block">
+                Update password
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================================================
+       MAIN APPLICATION (shown when session exists)
+       ============================================================ -->
+      <div id="app-screen" class="app-shell" hidden>
+        <div class="sidebar-scrim" id="sidebar-scrim"></div>
+
+        <aside class="sidebar" aria-label="Primary navigation">
+          <div class="sidebar-brand">JOB<span>FLOW</span></div>
+          <nav class="sidebar-nav">
+            <a href="#" data-view="dashboard" class="active">
+              <i class="fa-solid fa-house nav-icon" aria-hidden="true"></i>
+              Dashboard
+            </a>
+            <a href="#" data-view="applications">
+              <i class="fa-solid fa-briefcase nav-icon" aria-hidden="true"></i>
+              Applications
+            </a>
+            <a href="#" data-view="interviews">
+              <i
+                class="fa-solid fa-calendar-check nav-icon"
+                aria-hidden="true"
+              ></i>
+              Interviews
+            </a>
+            <a href="#" data-view="contacts">
+              <i class="fa-solid fa-user-group nav-icon" aria-hidden="true"></i>
+              Contacts
+            </a>
+            <a href="#" data-view="analytics">
+              <i
+                class="fa-solid fa-chart-column nav-icon"
+                aria-hidden="true"
+              ></i>
+              Analytics
+            </a>
+            <a href="#" data-view="settings">
+              <i class="fa-solid fa-gear nav-icon" aria-hidden="true"></i>
+              Settings
+            </a>
+          </nav>
+          <div class="sidebar-footer">
+            <div class="sidebar-user">
+              <div class="sidebar-avatar" id="sidebar-avatar">?</div>
+              <div class="sidebar-user-info">
+                <div class="sidebar-user-name" id="sidebar-user-name">—</div>
+                <div class="sidebar-user-email" id="sidebar-user-email">—</div>
+              </div>
+            </div>
+            <button
+              type="button"
+              class="btn btn-secondary btn-block"
+              id="logout-btn"
+            >
+              Log out
+            </button>
+          </div>
+        </aside>
+
+        <div class="main-area">
+          <header class="topbar">
+            <button
+              type="button"
+              class="hamburger"
+              id="hamburger-btn"
+              aria-label="Open menu"
+              aria-controls="app-screen"
+            >
+              <i class="fa-solid fa-bars" aria-hidden="true"></i>
+            </button>
+            <div class="topbar-brand">JobFlow</div>
+            <div style="width: 40px"></div>
+          </header>
+
+          <main id="main-content">
+            <!-- DASHBOARD -->
+            <section class="app-view" data-view-name="dashboard">
+              <div class="view-container" id="dashboard-container">
+                <div class="loading-row">
+                  <span class="spinner"></span><span>Loading dashboard…</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- APPLICATIONS -->
+            <section class="app-view" data-view-name="applications" hidden>
+              <div class="view-container" id="applications-container">
+                <div class="loading-row">
+                  <span class="spinner"></span
+                  ><span>Loading applications…</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- INTERVIEWS -->
+            <section class="app-view" data-view-name="interviews" hidden>
+              <div class="view-container" id="interviews-container">
+                <div class="loading-row">
+                  <span class="spinner"></span><span>Loading interviews…</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- CONTACTS -->
+            <section class="app-view" data-view-name="contacts" hidden>
+              <div class="view-container" id="contacts-container">
+                <div class="loading-row">
+                  <span class="spinner"></span><span>Loading contacts…</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- ANALYTICS -->
+            <section class="app-view" data-view-name="analytics" hidden>
+              <div class="view-container" id="analytics-container">
+                <div class="loading-row">
+                  <span class="spinner"></span><span>Loading analytics…</span>
+                </div>
+              </div>
+            </section>
+
+            <!-- SETTINGS -->
+            <section class="app-view" data-view-name="settings" hidden>
+              <div class="view-container" id="settings-container">
+                <div class="loading-row">
+                  <span class="spinner"></span><span>Loading settings…</span>
+                </div>
+              </div>
+            </section>
+          </main>
+        </div>
+      </div>
+
+      <!-- ============================================================
+       GLOBAL LOADING SCREEN (session check on first paint)
+       ============================================================ -->
+      <div
+        id="boot-screen"
+        style="
+          min-height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          gap: 12px;
+        "
+      >
+        <div
+          class="spinner"
+          style="width: 26px; height: 26px; border-width: 3px"
+        ></div>
+        <div
+          class="text-muted"
+          style="font-family: var(--font-mono); font-size: 12px"
+        >
+          Loading JobFlow…
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div id="toast-region" aria-live="polite"></div>
+
+    <script type="module" src="js/app.js"></script>
+  </body>
+</html>
