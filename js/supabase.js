@@ -6,7 +6,7 @@
 // (window.supabase), so no npm install is required.
 // ============================================================
 
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "./config.js?v=20261027";
 
 const configurationErrorMessage =
   "Supabase is not configured yet. Copy config.example.js to js/config.js and add your project URL and anon key.";
@@ -121,16 +121,39 @@ if (hasPlaceholderCredentials) {
   );
 }
 
-export const supabase =
-  hasSupabaseLibrary && !hasPlaceholderCredentials
-    ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+const safeSupabaseUrl = /^https?:\/\//i.test(String(SUPABASE_URL || "").trim())
+  ? SUPABASE_URL
+  : "https://example-project.supabase.co";
+
+const safeSupabaseAnonKey =
+  String(SUPABASE_ANON_KEY || "").trim() || "your-anon-key-here";
+
+let supabaseClient = makeUnavailableSupabase();
+
+if (hasSupabaseLibrary && !hasPlaceholderCredentials) {
+  try {
+    supabaseClient = window.supabase.createClient(
+      safeSupabaseUrl,
+      safeSupabaseAnonKey,
+      {
         auth: {
           persistSession: true,
           autoRefreshToken: true,
           detectSessionInUrl: true,
         },
-      })
-    : makeUnavailableSupabase();
+      },
+    );
+  } catch (error) {
+    console.warn(
+      "[JobFlow] Supabase client initialization failed. Falling back to a safe, non-connected mode.",
+      error,
+    );
+  }
+}
+
+export const supabase = supabaseClient;
 
 export const isSupabaseConfigured =
-  hasSupabaseLibrary && !hasPlaceholderCredentials;
+  hasSupabaseLibrary &&
+  !hasPlaceholderCredentials &&
+  /^https?:\/\//i.test(String(SUPABASE_URL || "").trim());
